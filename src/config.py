@@ -1,8 +1,7 @@
-import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
-from pathlib import Path
 import random
+import numpy as np
+from pathlib import Path
+from datetime import datetime
 
 # Configurazione seed per riproducibilità
 np.random.seed(42)
@@ -14,6 +13,15 @@ NUM_MATERIALS = 18
 NUM_CUSTOMERS = 40
 MONTHS_HISTORY = 36
 MONTHS_FORECAST = 12
+START_DATE = datetime(2023, 1, 1)
+
+
+#====================
+# CANCELLARE
+#====================
 
 # Creare cartella output se non esiste
-OUTPUT_DIR.mkdir(exist_ok=True)
+#OUTPUT_DIR.mkdir(exist_ok=True)
+
+
+
