@@ -1,8 +1,29 @@
 import random
+import pycountry
 import pandas as pd
 
 from src.utils.utils import on_going_messages
-from src.config import NUM_CUSTOMERS, OUTPUT_DIR
+from src.config import  OUTPUT_DIR
+
+#===============================
+# master customers configuration
+#===============================
+# Number of customers to create
+NUM_CUSTOMERS = 40
+
+# Customers Type
+CUSTOMER_TYPES = ["Ospedale", "Farmacia", "Grossista", "ASL"]
+
+# Customers Region
+COUNTRY_ISO2_CODE = "IT"                                                                        # Select country
+def get_regions_from_pycountry(country_iso_code2):
+    country_all_administration = pycountry.subdivisions.get(country_code = COUNTRY_ISO2_CODE)   # Get all administration from country
+    regions_temp = [sub for sub in country_all_administration if sub.type == "Region"]          # Get all regions from country ()
+    return [r.name for r in regions_temp]                                                       # Get all regions from country ()
+regions = get_regions_from_pycountry(COUNTRY_ISO2_CODE)
+
+# Payment terms (Cambiare con qualcos'altro)
+PAYMENT_TERMS = [30, 60, 90, 120]
 
 def generate_master_customer():
     """
@@ -13,36 +34,16 @@ def generate_master_customer():
     """
     on_going_messages("Generating customers...")
 
-    customer_types = ["Ospedale", "Farmacia", "Grossista", "ASL"]
-    regions = ["Nord", "Centro", "Sud", "Isole"]
-    payment_terms = [30, 60, 90, 120]
-
-    # Nomi realistici per i clienti
-    hospital_names = ["San Raffaele", "Policlinico", "Ospedale Civile", "Clinica Santa Maria"]
-    pharmacy_names = ["Farmacia Centrale", "Farmacia del Corso", "Farmacia Moderna"]
-    grossist_names = ["Grossista Pharma", "Distribuzione Farmaci"]
-    asl_names = ["ASL"]
-
     customers = []
     for i in range(1, NUM_CUSTOMERS + 1):
-        customer_type = random.choice(customer_types)
-
-        # Nome cliente basato sul tipo
-        if customer_type == "Ospedale":
-            base_name = random.choice(hospital_names)
-        elif customer_type == "Farmacia":
-            base_name = random.choice(pharmacy_names)
-        elif customer_type == "Grossista":
-            base_name = random.choice(grossist_names)
-        else:
-            base_name = random.choice(asl_names)
+        customer_type = random.choice(CUSTOMER_TYPES)
 
         customer = {
             "CustomerID": f"CUST{i:03d}",
-            "CustomerName": f"{base_name} {i}",
+            "CustomerName": f"Cliente_{chr(64+i%26)}{i}",
             "CustomerType": customer_type,
             "Region": random.choice(regions),
-            "PaymentTerms": random.choice(payment_terms)
+            "PaymentTerms": random.choice(PAYMENT_TERMS)
         }
         customers.append(customer)
 
