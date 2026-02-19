@@ -1,11 +1,10 @@
-import json
 import random
 import pandas as pd
 from datetime import datetime, timedelta
-from pathlib import Path
 
 from src.config import OUTPUT_DIR, START_DATE, MONTHS_HISTORY
 from src.utils.utils import on_going_messages
+from src.generate_data.generate_support_value import SEASONAL_FACTORS
 
 #===============================
 # table orders configuration
@@ -31,10 +30,6 @@ IMP_CONFIG = {
     "imp_2": {"qty_min": 3,  "qty_max": 10, "daily_prob": 0.35, "cust_max": 3},
     "imp_3": {"qty_min": 1,  "qty_max":  5, "daily_prob": 0.20, "cust_max": 2},
 }
-
-# Seasonal factors by month (1-12)
-with open(Path("config") / "seasonal_pattern.json", "r") as _f:
-    SEASONAL_FACTORS = json.load(_f)
 
 
 def _generate_all_days(start_date, months):

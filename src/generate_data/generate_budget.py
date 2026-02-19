@@ -4,7 +4,7 @@ from datetime import datetime
 
 from src.config import OUTPUT_DIR, START_DATE, MONTHS_HISTORY, MONTHS_FORECAST
 from src.utils.utils import on_going_messages
-from src.generate_data.generate_orders import SEASONAL_FACTORS
+from src.generate_data.generate_support_value import SEASONAL_FACTORS
 
 #===============================
 # budget configuration

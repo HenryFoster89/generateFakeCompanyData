@@ -1,24 +1,7 @@
-from datetime import datetime
+import json
 
-def generate_date_range(start_date, months):
-    """
-    Generate a list of monthly dates.
+from src.config import SEASONAL_PATTERN_PATH
 
-    Args:
-        start_date: Starting date
-        months: Number of months to generate
-
-    Returns:
-        List of Dates (first day of each month)
-    """
-    
-    dates = []
-    current = start_date
-    for _ in range(months):
-        dates.append(current)
-        # Passare al primo giorno del mese successivo
-        if current.month == 12:
-            current = datetime(current.year + 1, 1, 1)
-        else:
-            current = datetime(current.year, current.month + 1, 1)
-    return dates
+# Seasonal factors by month (1-12), loaded once at import time
+with open(SEASONAL_PATTERN_PATH, "r") as _f:
+    SEASONAL_FACTORS = json.load(_f)
