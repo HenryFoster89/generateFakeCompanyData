@@ -18,13 +18,14 @@ BUDGET_GRW_MIN = 0.02
 BUDGET_GRW_MAX = 0.08
 
 
-def generate_budget(orders_df):
+def generate_budget(sales_df):
     """
     Genera il file Budget.csv con il budget mensile per materiale.
 
-    Aggrega lo storico degli ordini per MaterialID × Mese, calcola la media
-    mensile per ogni materiale e genera il budget per l'intero arco temporale
-    (MONTHS_HISTORY + MONTHS_FORECAST mesi a partire da START_DATE) applicando:
+    Aggrega lo storico delle vendite (Venduto) per MaterialID × Mese, calcola
+    la media mensile per ogni materiale e genera il budget per l'intero arco
+    temporale (MONTHS_HISTORY + MONTHS_FORECAST mesi a partire da START_DATE)
+    applicando:
       - seasonal_factor  : fattore stagionale del mese
       - growth_factor    : crescita annua lineare (campionata per materiale)
       - buffer_factor    : buffer casuale mensile in [1+BUFFER_MIN, 1+BUFFER_MAX]
@@ -40,7 +41,7 @@ def generate_budget(orders_df):
         BudgetValue  (float) : Planned revenue
 
     Args:
-        orders_df: DataFrame degli ordini (deve contenere le colonne di Ordinato.csv)
+        sales_df: DataFrame delle vendite (deve contenere le colonne di Venduto.csv)
 
     Returns:
         DataFrame con il budget
@@ -62,13 +63,14 @@ def generate_budget(orders_df):
             current = datetime(current.year, current.month + 1, 1)
 
     # Average monthly qty and value per MaterialID over the historical period
-    df_hist = orders_df.copy()
-    df_hist["YearMonth"] = pd.to_datetime(df_hist["OrderDate"]).dt.to_period("M")
+    # Uses ShipmentDate so the baseline aligns with how sales are aggregated in the view
+    df_hist = sales_df.copy()
+    df_hist["YearMonth"] = pd.to_datetime(df_hist["ShipmentDate"]).dt.to_period("M")
 
     monthly_agg = (
         df_hist
         .groupby(["MaterialID", "YearMonth"])
-        .agg(TotalQty=("QuantityOrdered", "sum"), TotalValue=("OrderValue", "sum"))
+        .agg(TotalQty=("QuantitySold", "sum"), TotalValue=("SaleValue", "sum"))
         .reset_index()
     )
     avg_per_material = (

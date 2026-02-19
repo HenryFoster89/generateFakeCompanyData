@@ -10,6 +10,7 @@ random.seed(42)
 # Configurazione globale
 OUTPUT_DIR            = Path("data_output")
 SEASONAL_PATTERN_PATH = Path("config") / "seasonal_pattern.json"
+DB_PATH               = OUTPUT_DIR / "company_data.db"
 
 # Time window (shared by orders, sales, budget)
 START_DATE      = datetime(2023, 1, 1)

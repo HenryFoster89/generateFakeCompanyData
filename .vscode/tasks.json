@@ -1,0 +1,26 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run current SQL on SQLite (python -m sqlite3)",
+      "type": "shell",
+      "command": "python",
+      "args": [
+        "-m",
+        "sqlite3",
+        "data_output/company_data.db",
+        "<",
+        "${file}"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      }
+    }
+  ]
+}

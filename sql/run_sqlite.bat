@@ -1,0 +1,1 @@
+python -m sqlite3 data_output/company_data.db

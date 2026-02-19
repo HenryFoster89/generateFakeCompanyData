@@ -32,4 +32,7 @@ dfSal = generate_sales(dfOrd)
 # CREATE BUDGET
 #==============================================
 from src.generate_data.generate_budget import generate_budget
-dfBud = generate_budget(dfOrd)
+dfBud = generate_budget(dfSal)
+
+from src.generate_sql_lite_db.load_to_db import load_to_db
+load_to_db()
