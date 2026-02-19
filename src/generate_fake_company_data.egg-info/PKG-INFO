@@ -1,0 +1,158 @@
+Metadata-Version: 2.4
+Name: generate-fake-company-data
+Version: 0.1.0
+Summary: Create synthetic data of a pharmaceutical company
+Author-email: Enrico Stancanelli <enrico.stancanelli@example.com>
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Requires-Dist: anyio==4.12.1
+Requires-Dist: argon2-cffi==25.1.0
+Requires-Dist: argon2-cffi-bindings==25.1.0
+Requires-Dist: arrow==1.4.0
+Requires-Dist: asttokens==3.0.1
+Requires-Dist: async-lru==2.1.0
+Requires-Dist: attrs==25.4.0
+Requires-Dist: babel==2.18.0
+Requires-Dist: beautifulsoup4==4.14.3
+Requires-Dist: bleach==6.3.0
+Requires-Dist: certifi==2026.1.4
+Requires-Dist: cffi==2.0.0
+Requires-Dist: charset-normalizer==3.4.4
+Requires-Dist: colorama==0.4.6
+Requires-Dist: comm==0.2.3
+Requires-Dist: contourpy==1.3.3
+Requires-Dist: cycler==0.12.1
+Requires-Dist: debugpy==1.8.20
+Requires-Dist: decorator==5.2.1
+Requires-Dist: defusedxml==0.7.1
+Requires-Dist: executing==2.2.1
+Requires-Dist: fastjsonschema==2.21.2
+Requires-Dist: fonttools==4.61.1
+Requires-Dist: fqdn==1.5.1
+Requires-Dist: h11==0.16.0
+Requires-Dist: httpcore==1.0.9
+Requires-Dist: httpx==0.28.1
+Requires-Dist: idna==3.11
+Requires-Dist: ipykernel==7.2.0
+Requires-Dist: ipython==9.10.0
+Requires-Dist: ipython_pygments_lexers==1.1.1
+Requires-Dist: ipywidgets==8.1.8
+Requires-Dist: isoduration==20.11.0
+Requires-Dist: jedi==0.19.2
+Requires-Dist: Jinja2==3.1.6
+Requires-Dist: json5==0.13.0
+Requires-Dist: jsonpointer==3.0.0
+Requires-Dist: jsonschema==4.26.0
+Requires-Dist: jsonschema-specifications==2025.9.1
+Requires-Dist: jupyter==1.1.1
+Requires-Dist: jupyter-console==6.6.3
+Requires-Dist: jupyter-events==0.12.0
+Requires-Dist: jupyter-lsp==2.3.0
+Requires-Dist: jupyter_client==8.8.0
+Requires-Dist: jupyter_core==5.9.1
+Requires-Dist: jupyter_server==2.17.0
+Requires-Dist: jupyter_server_terminals==0.5.4
+Requires-Dist: jupyterlab==4.5.4
+Requires-Dist: jupyterlab_pygments==0.3.0
+Requires-Dist: jupyterlab_server==2.28.0
+Requires-Dist: jupyterlab_widgets==3.0.16
+Requires-Dist: kiwisolver==1.4.9
+Requires-Dist: lark==1.3.1
+Requires-Dist: MarkupSafe==3.0.3
+Requires-Dist: matplotlib==3.10.8
+Requires-Dist: matplotlib-inline==0.2.1
+Requires-Dist: mistune==3.2.0
+Requires-Dist: nbclient==0.10.4
+Requires-Dist: nbconvert==7.17.0
+Requires-Dist: nbformat==5.10.4
+Requires-Dist: nest-asyncio==1.6.0
+Requires-Dist: notebook==7.5.3
+Requires-Dist: notebook_shim==0.2.4
+Requires-Dist: numpy==2.4.2
+Requires-Dist: packaging==26.0
+Requires-Dist: pandas==3.0.0
+Requires-Dist: pandocfilters==1.5.1
+Requires-Dist: parso==0.8.6
+Requires-Dist: pillow==12.1.1
+Requires-Dist: platformdirs==4.9.2
+Requires-Dist: prometheus_client==0.24.1
+Requires-Dist: prompt_toolkit==3.0.52
+Requires-Dist: psutil==7.2.2
+Requires-Dist: pure_eval==0.2.3
+Requires-Dist: pycparser==3.0
+Requires-Dist: Pygments==2.19.2
+Requires-Dist: pyparsing==3.3.2
+Requires-Dist: python-dateutil==2.9.0.post0
+Requires-Dist: python-json-logger==4.0.0
+Requires-Dist: pywinpty==3.0.3
+Requires-Dist: PyYAML==6.0.3
+Requires-Dist: pyzmq==27.1.0
+Requires-Dist: referencing==0.37.0
+Requires-Dist: requests==2.32.5
+Requires-Dist: rfc3339-validator==0.1.4
+Requires-Dist: rfc3986-validator==0.1.1
+Requires-Dist: rfc3987-syntax==1.1.0
+Requires-Dist: rpds-py==0.30.0
+Requires-Dist: Send2Trash==2.1.0
+Requires-Dist: setuptools==82.0.0
+Requires-Dist: six==1.17.0
+Requires-Dist: soupsieve==2.8.3
+Requires-Dist: stack-data==0.6.3
+Requires-Dist: terminado==0.18.1
+Requires-Dist: tinycss2==1.4.0
+Requires-Dist: tornado==6.5.4
+Requires-Dist: traitlets==5.14.3
+Requires-Dist: typing_extensions==4.15.0
+Requires-Dist: tzdata==2025.3
+Requires-Dist: uri-template==1.3.0
+Requires-Dist: urllib3==2.6.3
+Requires-Dist: wcwidth==0.6.0
+Requires-Dist: webcolors==25.10.0
+Requires-Dist: webencodings==0.5.1
+Requires-Dist: websocket-client==1.9.0
+Requires-Dist: widgetsnbextension==4.0.15
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0; extra == "dev"
+Requires-Dist: black>=23.0; extra == "dev"
+Requires-Dist: isort>=5.0; extra == "dev"
+Requires-Dist: flake8>=6.0; extra == "dev"
+
+# Goal
+
+Create synthetic data of a pharmaceutical company.
+
+# Output
+After running `generate_fake_data.py`, the following `.csv` files will be available in the `data_output` folder:
+- MasterMaterial.csv
+- MasterCustomer.csv
+
+TODO (in maniera ordinata rispetto l'iterazione)
+- Budget.csv
+- Forecast.csv
+- LivelloInventario.csv
+- Ordinato.csv
+- Venduto.csv
+
+## Output description
+`MasterMaterial.csv` 
+| Column Name | Data Type | Description |
+|-------------|-----------|-------------|
+| MaterialID | String | Unique identifier for the material |
+| MaterialName | String | Name of the material/drug |
+| Category | String | Category of the drug (e.g., Analgesici, Antiinfiammatori, etc.) |
+| UnitOfMeasure | String | Unit of measure (e.g., Scatole, Flaconi, Confezioni, Blister) |
+| UnitCost | Float | Cost per unit |
+| TargetInventoryDays | Integer | Target number of days to keep in inventory |
+
+
+`categories` and `units` can be customized by modifying the files in the `config` folder:
+- `masterMaterial_categories.json`
+- `masterMaterial_units.json`
