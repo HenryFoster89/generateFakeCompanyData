@@ -4,17 +4,12 @@ import pandas as pd
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from src.config import OUTPUT_DIR
+from src.config import OUTPUT_DIR, START_DATE, MONTHS_HISTORY
 from src.utils.utils import on_going_messages
 
 #===============================
 # table orders configuration
 #===============================
-# Start Date
-START_DATE = datetime(2023, 1, 1)
-
-# Number of months
-MONTHS_HISTORY = 36
 
 # Sales MarkUp
 MRK_MIN = 3.0

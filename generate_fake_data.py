@@ -23,7 +23,13 @@ from src.generate_data.generate_orders import generate_ordinato
 dfOrd = generate_ordinato(dfMaMa, dfMaCu)
 
 #==============================================
-# CREATE ORDERS
+# CREATE SALES
 #==============================================
 from src.generate_data.generate_sales import generate_sales
 dfSal = generate_sales(dfOrd)
+
+#==============================================
+# CREATE BUDGET
+#==============================================
+from src.generate_data.generate_budget import generate_budget
+dfBud = generate_budget(dfOrd)
