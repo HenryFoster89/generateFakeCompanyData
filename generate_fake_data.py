@@ -21,3 +21,9 @@ dfMaCu = generate_master_customer()
 #==============================================
 from src.generate_data.generate_orders import generate_ordinato
 dfOrd = generate_ordinato(dfMaMa, dfMaCu)
+
+#==============================================
+# CREATE ORDERS
+#==============================================
+from src.generate_data.generate_sales import generate_sales
+dfSal = generate_sales(dfOrd)

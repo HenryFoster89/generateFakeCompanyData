@@ -1,4 +1,3 @@
-import json
 from datetime import datetime
 
 def generate_date_range(start_date, months):
@@ -23,25 +22,3 @@ def generate_date_range(start_date, months):
         else:
             current = datetime(current.year, current.month + 1, 1)
     return dates
-
-
-def generate_seasonal_factor(month):
-    """
-    Genera un fattore stagionale per simulare variazioni nelle vendite farmaceutiche.
-
-    Args:
-        month: Mese (1-12)
-
-    Returns:
-        Fattore moltiplicativo (0.7 - 1.3)
-    """
-
-    try:
-        #TODO move pathname to config.py
-        with open(r'config\seasonal_pattern.json', 'r') as file:
-            data = json.load(file)
-    except FileNotFoundError:
-        print("Error: File not found.")
-    
-    #TODO  Check with old version
-    return data[month][0]
