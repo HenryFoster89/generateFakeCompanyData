@@ -2,9 +2,26 @@ import random
 import pandas as pd
 from datetime import datetime
 
-from src.config import START_DATE, MONTHS_HISTORY, OUTPUT_DIR
+from src.config import OUTPUT_DIR
 from src.utils.utils import on_going_messages
 from src.generate_data.generate_support_value import generate_date_range, generate_seasonal_factor
+
+#===============================
+# table orders configuration
+#===============================
+# Stard Date
+START_DATE = datetime(2023, 1, 1)
+
+# Number of months
+MONTHS_HISTORY = 36
+
+# PullOut Quantity
+QTY_MIN = 100 
+QTY_MAX = 1000
+
+# PullOut Growth
+GRW_MIN = 0
+GRW_MAX = 0.10
 
 def generate_ordinato(materials_df, customers_df):
     """
@@ -31,10 +48,10 @@ def generate_ordinato(materials_df, customers_df):
         unit_cost = material["UnitCost"]
 
         # Quantità base mensile (varia per materiale)
-        base_quantity = random.randint(100, 1000)
+        base_quantity = random.randint(QTY_MIN, QTY_MAX)
 
         # Trend di crescita annuale (0-10%)
-        annual_growth = random.uniform(0, 0.10)
+        annual_growth = random.uniform(GRW_MIN, GRW_MAX)
 
         # Per ogni mese
         for month_idx, date in enumerate(dates):
