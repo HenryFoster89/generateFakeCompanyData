@@ -1,5 +1,9 @@
 # Environment
 .venv
 
+# Personalizzazioni
+.claude
+.vscode
+
 # Created by script
 data_output
