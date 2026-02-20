@@ -7,7 +7,7 @@ DB_PATH               = OUTPUT_DIR / "company_data.db"
 
 # Time window (shared by orders, sales, budget)
 START_DATE      = datetime(2023, 1, 1)
-MONTHS_HISTORY  = 36
+MONTHS_HISTORY  = 24
 MONTHS_FORECAST = 12
 
 

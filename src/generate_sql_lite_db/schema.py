@@ -27,6 +27,7 @@ TABLE_SCHEMA: dict[str, dict] = {
             "UnitCost":      "REAL    NOT NULL",
             "UnitPrice":     "REAL    NOT NULL",
             "Importance":    "TEXT    NOT NULL",   # imp_1 | imp_2 | imp_3
+            "LeadTimeDays":  "INTEGER NOT NULL",   # nominal replenishment lead time (days)
         },
     },
 

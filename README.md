@@ -15,6 +15,7 @@ src/
 │   ├── generate_orders.py           # Ordinato giornaliero
 │   ├── generate_sales.py            # Venduto (da ordini)
 │   ├── generate_budget.py           # Budget mensile per materiale
+│   ├── generate_inventory.py        # Inventario giornaliero per materiale
 │   └── generate_support_value.py    # Utility condivise (SEASONAL_FACTORS)
 └── generate_sql_lite_db/
     ├── schema.py                    # Registro esplicito tabelle/tipi SQLite
@@ -29,6 +30,7 @@ data_output/                         # Generato a runtime
 ├── Ordinato.csv
 ├── Venduto.csv
 ├── Budget.csv
+├── Inventario.csv
 └── company_data.db                  # SQLite DB (ricreato ad ogni run)
 ```
 
@@ -45,6 +47,7 @@ After running the pipeline, the following files are available in `data_output/`:
 | `Ordinato.csv` | Ordini giornalieri (36 mesi) |
 | `Venduto.csv` | Vendite consuntivate |
 | `Budget.csv` | Budget mensile per materiale (storico + forecast 12 mesi) |
+| `Inventario.csv` | Inventario giornaliero per materiale (modello reorder point) |
 | `company_data.db` | SQLite DB con tutte le tabelle sopra |
 
 ---
@@ -62,6 +65,7 @@ After running the pipeline, the following files are available in `data_output/`:
 | UnitCost | Float | Costo di produzione unitario |
 | UnitPrice | Float | Prezzo di vendita (UnitCost × un unico markup casuale applicato a tutti) |
 | Importance | String | Livello di importanza: `imp_1` (~50 %), `imp_2` (~25 %), `imp_3` (~25 %) |
+| LeadTimeDays | Integer | Lead time nominale di approvvigionamento (**giorni lavorativi**), campionato per item dal range del suo livello di importanza |
 
 ## MasterCustomer.csv
 
@@ -127,6 +131,22 @@ Granularità **mensile**. Copre l'intero storico (36 mesi) più 12 mesi di forec
 | MaterialID | String | Riferimento a MasterMaterial |
 | BudgetQty | Integer | Quantità pianificata |
 | BudgetValue | Float | Valore pianificato |
+
+## Inventario.csv
+
+Granularità **giornaliera per materiale**. Modella lo stock con un approccio a **reorder point**: quando lo stock scende sotto la soglia, viene piazzato un ordine di rifornimento che arriva dopo `LeadTimeDays` giorni lavorativi. Le uscite giornaliere sono ricavate direttamente da `Venduto.csv`.
+
+L'andamento risultante è a **dente di sega**: lo stock decresce gradualmente per effetto delle vendite, poi risale bruscamente all'arrivo del rifornimento.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| InventoryID | String | Identificatore univoco (formato: INVxxxxxxx) |
+| Date | String | Data di riferimento (YYYY-MM-DD) |
+| MaterialID | String | Riferimento a MasterMaterial |
+| OpeningStock | Integer | Stock a inizio giornata |
+| DailyInflow | Integer | Unità ricevute da rifornimento in quel giorno |
+| DailyOutflow | Integer | Unità spedite (da Venduto.csv) in quel giorno |
+| ClosingStock | Integer | Stock a fine giornata — minimo 0 (giorni di stockout sono loggati a console) |
 
 ---
 
@@ -222,6 +242,31 @@ Ogni file `generate_*.py` espone costanti configurabili nella sezione iniziale. 
 |-----------|----------------|-------------|
 | `BUDGET_GRW_MIN` / `BUDGET_GRW_MAX` | `0.02` / `0.08` | Range del tasso di crescita annua applicato alla proiezione del budget per materiale |
 | `BUFFER_MIN` / `BUFFER_MAX` | `-0.15` / `+0.15` | Buffer casuale mensile applicato alla quantità/valore proiettato (±15 %) |
+
+## `generate_inventory.py` — inventario giornaliero
+
+| Parametro | Valore default | Descrizione |
+|-----------|----------------|-------------|
+| `AVG_DAILY_FALLBACK` | `1` | Consumo giornaliero minimo usato come fallback se un materiale non ha vendite |
+| `INV_CONFIG` | vedi tabella sotto | Configurazione dello stock per livello di importanza |
+
+`INV_CONFIG` per livello:
+
+| Chiave | Descrizione |
+|--------|-------------|
+| `initial_days` | Stock iniziale espresso in giorni di consumo medio |
+| `reorder_point_days` | Soglia di riordino: scatta un rifornimento quando lo stock scende sotto questa soglia (in giorni di consumo medio) |
+| `reorder_qty_days` | Quantità riordinata, espressa in giorni di consumo medio |
+
+> **Lead time:** non è definito in `INV_CONFIG`. Viene letto per-item da `MasterMaterial.LeadTimeDays` (**giorni lavorativi**), campionato una volta sola per ogni materiale tramite `LEAD_TIME_CONFIG` in `generate_master_material.py`. Questo garantisce che le analisi di safety stock usino esattamente lo stesso valore utilizzato durante la simulazione.
+
+Il lead time per livello di importanza (range di campionamento):
+
+| Livello | min (gg lavorativi) | max (gg lavorativi) |
+|---------|---------------------|---------------------|
+| imp_1   | 5                   | 15                  |
+| imp_2   | 7                   | 21                  |
+| imp_3   | 10                  | 30                  |
 
 ## `generate_support_value.py` — valori di supporto
 
