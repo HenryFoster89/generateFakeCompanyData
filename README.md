@@ -16,6 +16,7 @@ src/
 │   ├── generate_sales.py            # Venduto (da ordini)
 │   ├── generate_budget.py           # Budget mensile per materiale
 │   ├── generate_inventory.py        # Inventario giornaliero per materiale
+│   ├── generate_forecast.py         # Forecast mensile domanda (H=1…15)
 │   └── generate_support_value.py    # Utility condivise (SEASONAL_FACTORS)
 └── generate_sql_lite_db/
     ├── schema.py                    # Registro esplicito tabelle/tipi SQLite
@@ -31,6 +32,7 @@ data_output/                         # Generato a runtime
 ├── Venduto.csv
 ├── Budget.csv
 ├── Inventario.csv
+├── Forecast.csv
 └── company_data.db                  # SQLite DB (ricreato ad ogni run)
 ```
 
@@ -44,10 +46,11 @@ After running the pipeline, the following files are available in `data_output/`:
 |------|-------------|
 | `MasterMaterial.csv` | Anagrafica materiali |
 | `MasterCustomer.csv` | Anagrafica clienti |
-| `Ordinato.csv` | Ordini giornalieri (36 mesi) |
+| `Ordinato.csv` | Ordini giornalieri (24 mesi) |
 | `Venduto.csv` | Vendite consuntivate |
 | `Budget.csv` | Budget mensile per materiale (storico + forecast 12 mesi) |
 | `Inventario.csv` | Inventario giornaliero per materiale (modello reorder point) |
+| `Forecast.csv` | Forecast mensile domanda per materiale — 15 orizzonti (H=1…15) |
 | `company_data.db` | SQLite DB con tutte le tabelle sopra |
 
 ---
@@ -122,7 +125,7 @@ Generato a partire da `Ordinato.csv`. Non tutti gli ordini vengono evasi (tasso 
 
 ## Budget.csv
 
-Granularità **mensile**. Copre l'intero storico (36 mesi) più 12 mesi di forecast. Calcolato aggregando lo storico degli ordini per materiale e proiettandolo con crescita annua e stagionalità.
+Granularità **mensile**. Copre l'intero storico (24 mesi) più 12 mesi di forecast. Calcolato aggregando lo storico degli ordini per materiale e proiettandolo con crescita annua e stagionalità.
 
 | Column | Type | Description |
 |--------|------|-------------|
@@ -147,6 +150,28 @@ L'andamento risultante è a **dente di sega**: lo stock decresce gradualmente pe
 | DailyInflow | Integer | Unità ricevute da rifornimento in quel giorno |
 | DailyOutflow | Integer | Unità spedite (da Venduto.csv) in quel giorno |
 | ClosingStock | Integer | Stock a fine giornata — minimo 0 (giorni di stockout sono loggati a console) |
+
+## Forecast.csv
+
+Granularità **mensile per materiale per orizzonte previsionale**. Genera previsioni di domanda a 15 orizzonti (H=1 … H=15 mesi) per l'intera finestra temporale (storico + forecast).
+
+Il modello simula un forecaster reale:
+- ogni materiale ha un **bias stabile** (errore sistematico: sovra- o sotto-stima costante nel tempo)
+- il **rumore cresce linearmente con l'orizzonte**: ±10 % a H=1, fino a ±45 % a H=15
+
+Per i mesi storici (MONTHS_HISTORY) la base è la quantità effettiva venduta; per i mesi futuri si usa la media storica corretta per stagionalità e crescita.
+
+L'analisi di **forecast accuracy** (MAPE, MAE, Bias) si calcola unendo questa tabella con `Venduto` su `(MaterialID, ForecastMonth = YearMonth)`, filtrando sui mesi storici dove esiste l'actual.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| ForecastID | String | Identificatore univoco (formato: FCSTxxxxxxx) |
+| ForecastMadeOn | String | Mese in cui il forecast è stato prodotto (YYYY-MM) = `ForecastMonth − Horizon` |
+| ForecastMonth | String | Mese previsto (YYYY-MM) |
+| MaterialID | String | Riferimento a MasterMaterial |
+| Horizon | Integer | Orizzonte previsionale in mesi (1 … 15) |
+| ForecastQty | Integer | Quantità prevista (min 1) |
+| ForecastValue | Float | Valore previsto (ForecastQty × UnitPrice) |
 
 ---
 
@@ -183,8 +208,8 @@ Ogni file `generate_*.py` espone costanti configurabili nella sezione iniziale. 
 | Parametro | Valore default | Descrizione |
 |-----------|----------------|-------------|
 | `START_DATE` | `2023-01-01` | Data di inizio della finestra temporale usata da ordini, vendite e budget |
-| `MONTHS_HISTORY` | `36` | Mesi di storico da generare |
-| `MONTHS_FORECAST` | `12` | Mesi di forecast aggiuntivi (solo Budget) |
+| `MONTHS_HISTORY` | `24` | Mesi di storico da generare |
+| `MONTHS_FORECAST` | `12` | Mesi di forecast aggiuntivi (usato da Budget e Forecast) |
 | `OUTPUT_DIR` | `data_output/` | Cartella di output per tutti i CSV e il DB |
 | `SEASONAL_PATTERN_PATH` | `config/seasonal_pattern.json` | Percorso del file JSON con i fattori stagionali mensili |
 | `DB_PATH` | `data_output/company_data.db` | Percorso del database SQLite |
@@ -193,7 +218,7 @@ Ogni file `generate_*.py` espone costanti configurabili nella sezione iniziale. 
 
 | Parametro | Valore default | Descrizione |
 |-----------|----------------|-------------|
-| `NUM_MATERIALS` | `5` | Numero di materiali (SKU) da generare |
+| `NUM_MATERIALS` | `374` | Numero di materiali (SKU) da generare |
 | `PRODUCT_FAMILY` | lista 8 elementi | Famiglie terapeutiche assegnabili a ciascun materiale |
 | `UNITS` | `[Scatole, Flaconi, Blister, Confezioni]` | Unità di misura disponibili |
 | `IMPORTANCE_LEVELS` | `[imp_1, imp_2, imp_3]` | Livelli di importanza del materiale |
@@ -205,7 +230,7 @@ Ogni file `generate_*.py` espone costanti configurabili nella sezione iniziale. 
 
 | Parametro | Valore default | Descrizione |
 |-----------|----------------|-------------|
-| `NUM_CUSTOMERS` | `10` | Numero di clienti da generare |
+| `NUM_CUSTOMERS` | `1453` | Numero di clienti da generare |
 | `CUSTOMER_TYPES` | `[Ospedale, Farmacia, Grossista, ASL]` | Tipologie di cliente disponibili |
 | `COUNTRY_ISO2_CODE` | `"IT"` | Codice paese ISO 3166-1 alpha-2 usato per ricavare le regioni amministrative via `pycountry` |
 | `PAYMENT_TERMS` | `[30, 60, 90, 120]` | Dilazioni di pagamento disponibili (giorni) |
@@ -268,11 +293,31 @@ Il lead time per livello di importanza (range di campionamento):
 | imp_2   | 7                   | 21                  |
 | imp_3   | 10                  | 30                  |
 
+## `generate_forecast.py` — forecast mensile domanda
+
+| Parametro | Valore default | Descrizione |
+|-----------|----------------|-------------|
+| `HORIZONS` | `[1 … 15]` | Orizzonti previsionali generati (mesi avanti) |
+| `NOISE_BASE` | `0.10` | Ampiezza del rumore (±%) all'orizzonte H=1 |
+| `NOISE_SLOPE` | `0.025` | Incremento del rumore per ogni mese aggiuntivo di orizzonte (+2.5 pp/mese) |
+| `BIAS_MIN` / `BIAS_MAX` | `-0.10` / `+0.15` | Range del bias casuale stabile per materiale (errore sistematico: sotto- o sovra-stima) |
+| `FORECAST_GRW_MIN` / `FORECAST_GRW_MAX` | `0.02` / `0.08` | Range del tasso di crescita annua usato per estrapolare i mesi futuri (dove non esistono vendite reali) |
+
+Il rumore per orizzonte si calcola come: `noise_amp = NOISE_BASE + NOISE_SLOPE × (H − 1)`, che produce i seguenti MAPE attesi:
+
+| Orizzonte | Rumore (±%) | MAPE atteso |
+|-----------|-------------|-------------|
+| H=1       | ±10 %       | ~8–12 %     |
+| H=3       | ±15 %       | ~12–18 %    |
+| H=6       | ±22.5 %     | ~18–26 %    |
+| H=12      | ±37.5 %     | ~30–40 %    |
+| H=15      | ±45 %       | ~36–48 %    |
+
 ## `generate_support_value.py` — valori di supporto
 
 | Parametro | Fonte | Descrizione |
 |-----------|-------|-------------|
-| `SEASONAL_FACTORS` | `config/seasonal_pattern.json` | Dizionario `mese → [fattore]` caricato a import-time; usato da `generate_orders.py` e `generate_budget.py` per modulare i volumi mensili |
+| `SEASONAL_FACTORS` | `config/seasonal_pattern.json` | Dizionario `mese → [fattore]` caricato a import-time; usato da `generate_orders.py`, `generate_budget.py` e `generate_forecast.py` per modulare i volumi mensili |
 
 ---
 
@@ -328,6 +373,19 @@ Tipologie di analisi realizzabili con i dati generati. Tutte le analisi sono bas
 | Margine lordo per categoria terapeutica | Venduto, MasterMaterial | No |
 | Analisi DSO (Days Sales Outstanding) per cliente | Venduto, MasterCustomer | No |
 | Mix clienti per materiale (quali clienti ordinano quali SKU) | Ordinato, MasterCustomer | No |
+
+## Forecast Accuracy
+
+Confronto tra domanda prevista (Forecast) e domanda reale (Venduto aggregato per mese), filtrando i mesi storici dove esistono entrambi i valori.
+
+| Analisi | Tabelle coinvolte | Done |
+|---------|-------------------|------|
+| MAPE (Mean Absolute Percentage Error) per materiale e orizzonte | Forecast, Venduto | No |
+| MAE (Mean Absolute Error) per materiale e orizzonte | Forecast, Venduto | No |
+| Bias (errore sistematico medio: sovra- vs sotto-stima) per materiale | Forecast, Venduto | No |
+| Accuracy vs Orizzonte — curva MAPE medio per H=1…15 | Forecast, Venduto | No |
+| Distribuzione errori di forecast (istogramma per orizzonte) | Forecast, Venduto | No |
+| Materiali con peggior/miglior accuracy (ranking per MAPE a H=3) | Forecast, Venduto, MasterMaterial | No |
 
 ---
 
@@ -435,3 +493,77 @@ La scelta migliore è tenere **due repository con responsabilità separate**:
 ### Struttura JSON suggerita per ogni analisi
 
 Ogni file JSON contiene due chiavi: `meta` (descrizione dell'analisi, tabelle usate, data di generazione) e `data` (array di record pronti per essere plottati). Questo rende i file auto-documentanti e facilmente consumabili da qualsiasi libreria JS.
+
+---
+
+# Tabelle da aggiungere
+
+Tabelle non ancora implementate, identificate durante la progettazione del modello dati.
+
+## Proposta utente
+
+### `Forecast` — forecast mensile domanda *(implementata)*
+
+Tabella già implementata in questa sessione. Vedi sezione [Forecast.csv](#forecastcsv) per il dettaglio.
+
+## Proposte assistente
+
+### `Pagamenti` — registrazione pagamenti effettivi *(critica)*
+
+**Motivazione:** `MasterCustomer.PaymentTerms` indica la dilazione contrattuale (30/60/90/120 giorni), ma non il pagamento effettivo. Senza questa tabella, l'analisi DSO (Days Sales Outstanding) non è calcolabile realisticamente — si può solo stimare usando la data di spedizione + PaymentTerms, senza varianza.
+
+**Schema proposto:**
+
+| Colonna | Tipo | Descrizione |
+|---------|------|-------------|
+| PaymentID | String | Identificatore univoco |
+| SaleID | String | Riferimento a Venduto |
+| CustomerID | String | Riferimento a MasterCustomer |
+| InvoiceDate | String | Data di emissione fattura (tipicamente = ShipmentDate) |
+| DueDate | String | Data di scadenza (InvoiceDate + PaymentTerms) |
+| ActualPaymentDate | String | Data di pagamento effettivo (DueDate ± varianza casuale) |
+| AmountPaid | Float | Importo pagato |
+
+**Analisi abilitate:** DSO reale per cliente, aging del credito, tasso di ritardo pagamenti, distribuzione giorni di ritardo.
+
+---
+
+### `Resi` — resi merce *(opzionale)*
+
+**Motivazione:** simulare un tasso di reso del ~5 % delle righe venduta permette di calcolare il fatturato netto reale e il tasso di reso per materiale/categoria/cliente.
+
+**Schema proposto:**
+
+| Colonna | Tipo | Descrizione |
+|---------|------|-------------|
+| ReturnID | String | Identificatore univoco |
+| SaleID | String | Riferimento a Venduto |
+| MaterialID | String | Riferimento a MasterMaterial |
+| CustomerID | String | Riferimento a MasterCustomer |
+| ReturnDate | String | Data del reso (YYYY-MM-DD) |
+| QuantityReturned | Integer | Unità restituite |
+| ReturnValue | Float | Valore reso (QuantityReturned × UnitPrice) |
+
+**Analisi abilitate:** tasso di reso per materiale/categoria/cliente, fatturato netto (SaleValue − ReturnValue), impatto resi sul margine.
+
+---
+
+### `DimDate` — dimensione calendario *(utility BI)*
+
+**Motivazione:** tabella di utilità standard nei data warehouse. Evita di ricalcolare anno/trimestre/mese/settimana/IsWorkingDay a ogni query.
+
+**Schema proposto:**
+
+| Colonna | Tipo | Descrizione |
+|---------|------|-------------|
+| Date | String | Data (YYYY-MM-DD) — chiave primaria |
+| Year | Integer | Anno |
+| Quarter | Integer | Trimestre (1–4) |
+| Month | Integer | Mese (1–12) |
+| MonthName | String | Nome mese (Gennaio, …) |
+| Week | Integer | Numero settimana ISO |
+| IsWorkingDay | Integer | 1 se giorno lavorativo, 0 altrimenti |
+
+**Analisi abilitate:** qualsiasi aggregazione per periodo (YTD, QTD, MTD) senza logica di data nelle query.
+
+---

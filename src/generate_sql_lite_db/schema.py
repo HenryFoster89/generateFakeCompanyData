@@ -81,4 +81,17 @@ TABLE_SCHEMA: dict[str, dict] = {
         },
     },
 
+    "Forecast": {
+        "csv": "Forecast.csv",
+        "columns": {
+            "ForecastID":     "TEXT    PRIMARY KEY",
+            "ForecastMadeOn": "TEXT    NOT NULL",   # YYYY-MM: month the forecast was produced
+            "ForecastMonth":  "TEXT    NOT NULL",   # YYYY-MM: month being forecasted
+            "MaterialID":     "TEXT    NOT NULL",
+            "Horizon":        "INTEGER NOT NULL",   # months ahead (1 … 15)
+            "ForecastQty":    "INTEGER NOT NULL",
+            "ForecastValue":  "REAL    NOT NULL",
+        },
+    },
+
 }

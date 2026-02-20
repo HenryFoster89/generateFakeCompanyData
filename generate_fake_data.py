@@ -47,5 +47,11 @@ dfBud = generate_budget(dfSal)
 from src.generate_data.generate_inventory import generate_inventory
 dfInv = generate_inventory(dfMaMa, dfSal)
 
+#==============================================
+# CREATE FORECAST
+#==============================================
+from src.generate_data.generate_forecast import generate_forecast
+dfFor = generate_forecast(dfSal, dfMaMa)
+
 from src.generate_sql_lite_db.load_to_db import load_to_db
 load_to_db()
