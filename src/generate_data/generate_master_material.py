@@ -8,7 +8,7 @@ from src.config import  OUTPUT_DIR
 # master material configuration
 #===============================
 # Number of items to create
-NUM_MATERIALS = 50
+NUM_MATERIALS = 374
 
 PRODUCT_FAMILY = [
         "Antibiotici", "Analgesici", "Cardiovascolari", "Antiinfiammatori",

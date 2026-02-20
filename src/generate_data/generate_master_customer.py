@@ -9,7 +9,7 @@ from src.config import  OUTPUT_DIR
 # master customers configuration
 #===============================
 # Number of customers to create
-NUM_CUSTOMERS = 10
+NUM_CUSTOMERS = 1453
 
 # Customers Type
 CUSTOMER_TYPES = ["Ospedale", "Farmacia", "Grossista", "ASL"]

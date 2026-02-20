@@ -273,3 +273,165 @@ Il lead time per livello di importanza (range di campionamento):
 | Parametro | Fonte | Descrizione |
 |-----------|-------|-------------|
 | `SEASONAL_FACTORS` | `config/seasonal_pattern.json` | Dizionario `mese → [fattore]` caricato a import-time; usato da `generate_orders.py` e `generate_budget.py` per modulare i volumi mensili |
+
+---
+
+# Analisi
+
+Tipologie di analisi realizzabili con i dati generati. Tutte le analisi sono basate sulle tabelle disponibili in `data_output/company_data.db`.
+
+## Supply Chain & Inventario
+
+| Analisi | Tabelle coinvolte | Done |
+|---------|-------------------|------|
+| Evoluzione stock giornaliero per materiale (sawtooth) | Inventario | No |
+| Giorni di stockout per materiale / periodo | Inventario | No |
+| Fill Rate (ClosingStock > 0 / totale giorni) | Inventario | No |
+| Safety Stock effettivo vs teorico (σ domanda × √LeadTime) | Inventario, MasterMaterial, Venduto | No |
+| Giorni di copertura residui per materiale | Inventario, Venduto | No |
+| Analisi ABC per valore di stock (OpeningStock × UnitCost) | Inventario, MasterMaterial | No |
+| Frequenza e dimensione dei rifornimenti (DailyInflow > 0) | Inventario | No |
+| Confronto LeadTimeDays teorico vs gap reale tra ordine e consegna | MasterMaterial, Ordinato, Venduto | No |
+
+## Vendite & Budget
+
+| Analisi | Tabelle coinvolte | Done |
+|---------|-------------------|------|
+| Actual vs Budget (Qty e Value) per materiale / mese | Venduto, Budget | No |
+| Scostamento % Budget per categoria terapeutica | Venduto, Budget, MasterMaterial | No |
+| Trend di crescita annua per materiale (CAGR) | Venduto | No |
+| Stagionalità delle vendite (volume mensile normalizzato) | Venduto | No |
+| Revenue breakdown per categoria terapeutica | Venduto, MasterMaterial | No |
+| Analisi ABC per fatturato (Pareto 80/20) | Venduto, MasterMaterial | No |
+| Analisi XYZ per variabilità domanda (CV = σ/μ mensile) | Venduto | No |
+| Matrice ABC-XYZ per prioritizzazione SKU | Venduto, MasterMaterial | No |
+
+## Ordini & OTIF
+
+| Analisi | Tabelle coinvolte | Done |
+|---------|-------------------|------|
+| OTIF — On Time In Full (ordini evasi completi entro RequestedDate) | Ordinato, Venduto | No |
+| Tasso di evasione ordini (Fulfillment Rate) | Ordinato, Venduto | No |
+| Tasso di consegne parziali (Partial Rate) | Venduto | No |
+| Ritardo medio di spedizione (ShipmentDate − RequestedDate) | Ordinato, Venduto | No |
+| Volume ordinato vs spedito per materiale / periodo | Ordinato, Venduto | No |
+| Ordini inevasi (OrderID in Ordinato non presenti in Venduto) | Ordinato, Venduto | No |
+
+## Clienti & Margini
+
+| Analisi | Tabelle coinvolte | Done |
+|---------|-------------------|------|
+| Fatturato per cliente (ranking) | Venduto, MasterCustomer | No |
+| Fatturato per tipo cliente (Ospedale, Farmacia, Grossista, ASL) | Venduto, MasterCustomer | No |
+| Fatturato per regione geografica | Venduto, MasterCustomer | No |
+| Margine lordo per materiale (SaleValue − QuantitySold × UnitCost) | Venduto, MasterMaterial | No |
+| Margine lordo per categoria terapeutica | Venduto, MasterMaterial | No |
+| Analisi DSO (Days Sales Outstanding) per cliente | Venduto, MasterCustomer | No |
+| Mix clienti per materiale (quali clienti ordinano quali SKU) | Ordinato, MasterCustomer | No |
+
+---
+
+# Architettura analitica — decisione aperta
+
+## Contesto
+
+Il deliverable finale è un sito **GitHub Pages** (statico: HTML + CSS + JS) da affiancare al CV.
+Il DB SQLite è generato in questo progetto e spostato nel progetto portfolio.
+
+## Vincolo tecnico
+
+GitHub Pages **non può eseguire Python né interrogare SQLite a runtime**. Serve solo file statici.
+Conseguenza: il DB è uno strumento intermedio, non la fonte dati live del portfolio.
+
+## Opzioni discusse
+
+### Opzione A — SQL views + JS diretto sul DB
+
+- Creare viste SQL nel DB per incapsulare la logica di business (OTIF, fulfillment rate, margini, ecc.)
+- Il sito JS interroga il DB tramite **sql.js** (SQLite compilato in WebAssembly)
+- **Pro**: logica di business centralizzata nel DB; queryabile da qualsiasi tool esterno
+- **Contro**: sql.js è pesante; alcune analisi (ABC-XYZ, safety stock, CAGR) richiedono `STDDEV` e `PERCENTILE_CONT` che SQLite non supporta nativamente
+
+### Opzione B — Python scripts → JSON → JS (consigliata)
+
+- Script Python (`analytics/`) leggono dal DB, calcolano i KPI, esportano JSON pre-aggregati
+- Il sito GitHub Pages legge i JSON e li plotta con **Chart.js** o **Plotly.js**
+- **Pro**: piena potenza statistica in Python; JSON leggeri; nessun vincolo SQL; output versionabile
+- **Contro**: logica analitica dispersa tra Python e JS; il DB non è più "interrogabile" dal portfolio
+
+### Opzione C — Python → HTML statici (Plotly export)
+
+- Python genera file HTML auto-contenuti (`plotly fig.write_html()`) per ogni grafico
+- GitHub Pages li serve direttamente, senza bisogno di JS aggiuntivo
+- **Pro**: zero JS sul portfolio; grafici interattivi già pronti
+- **Contro**: file HTML pesanti; meno flessibilità nel layout del sito
+
+### Opzione D — DB only qui, tutta la logica analitica nel portfolio
+
+- Questo progetto produce **solo** il DB SQLite (nessuno script di analisi)
+- Il progetto `portfolioGitHub` contiene tutta la logica: KPI, grafici, layout
+- Il portfolio è quindi **autosufficiente e completo** — chi lo vede insieme al CV trova tutto in un posto
+- **Pro**: separazione netta dei ruoli (questo progetto = generazione dati; portfolio = analisi + presentazione); il portfolio dimostra sia le competenze analitiche che quelle di visualizzazione
+- **Contro**: questo progetto diventa un generatore di dati "muto", senza strato analitico autonomo
+
+### Opzione E — Questo progetto diventa un sotto-pacchetto di portfolioGitHub
+
+- `generateFakeCompanyData` viene inglobato in `portfolioGitHub` come modulo interno (o sottorepository)
+- L'unico progetto pubblico è `portfolioGitHub`, che fa tutto in sequenza:
+  1. Genera il DB (logica di questo progetto)
+  2. Calcola i KPI (Python)
+  3. Produce i JSON pre-aggregati
+  4. Serve HTML + CSS + JS per la visualizzazione
+- **Pro**: repository unico, pipeline end-to-end visibile tutta in un posto; chi visita il portfolio vede l'intera catena; nessuna dipendenza esterna da gestire
+- **Contro**: il progetto portfolio diventa più grande e meno focalizzato sulla presentazione; la logica di generazione dati e quella di visualizzazione sono mescolate nello stesso repository
+
+## Domande aperte prima di decidere
+
+1. Il portfolio avrà un layout personalizzato (HTML/CSS custom) o userà un template/framework?
+2. È necessario che il DB sia interrogabile interattivamente dall'utente del sito, o bastano grafici fissi?
+3. Quanto JS si vuole scrivere nel progetto portfolio?
+4. Si vuole che questo progetto abbia valore standalone (con analisi proprie), o serve solo come generatore per il portfolio?
+5. Si preferisce avere **due repository separati** (generazione dati / portfolio) o **un unico repository** che fa tutto?
+
+---
+
+## Considerazioni e raccomandazione
+
+### Opzioni da escludere subito
+
+- **Opzione A** (sql.js): eccessivamente complessa, sql.js pesa ~1 MB, e le analisi statistiche più importanti (ABC-XYZ, safety stock, CAGR) non sono implementabili in SQLite standard. Non vale lo sforzo.
+- **Opzione C** (HTML Plotly export): i file HTML auto-contenuti di Plotly pesano 3–5 MB ciascuno. Con 29 analisi, il portfolio sarebbe impraticabile su mobile e lento anche su desktop. Da evitare.
+- **Opzione E** (repo unico): mescolare generazione dati, analytics e frontend in un unico repository rende tutto più difficile da leggere, testare e mantenere. Riduce anche la leggibilità del portfolio stesso, che dovrebbe essere focalizzato sulla presentazione.
+
+### Raccomandazione: Opzione B — con analytics in questo progetto
+
+La scelta migliore è tenere **due repository con responsabilità separate**:
+
+```
+[generateFakeCompanyData]           [portfolioGitHub]
+  ├── genera il DB                    ├── legge i JSON
+  ├── calcola tutti i KPI             ├── plotta con Chart.js o Plotly.js
+  └── esporta JSON pre-aggregati      └── HTML + CSS + layout
+          ↓
+     data_output/analytics/
+     ├── kpi_otif.json
+     ├── kpi_abc_xyz.json
+     ├── kpi_revenue_by_category.json
+     └── ...
+```
+
+**Perché questa scelta:**
+
+1. **Questo progetto resta autonomo e dimostrativo** — chi arriva su questo repository vede non solo la generazione dati ma anche la logica analitica completa in Python. È un progetto di data engineering + analytics a sé stante.
+
+2. **Il portfolio fa solo il frontend** — responsabilità unica, codice pulito, facile da mantenere. Non deve sapere nulla di SQL, pandas o scipy.
+
+3. **I JSON sono il contratto tra i due progetti** — file leggeri, versionabili, leggibili. Se un'analisi cambia, si rigenera il JSON e il portfolio si aggiorna automaticamente.
+
+4. **Nessun vincolo SQL** — Python ha piena potenza statistica (numpy, scipy, pandas) per calcolare tutto: ABC-XYZ, CAGR, safety stock teorico, DSO, CV.
+
+5. **Opzione C rimane un fallback** — se non si vuole scrivere JS nel portfolio, si può usare Plotly per esportare HTML leggeri (non auto-contenuti) che referenziano la CDN. Il layout rimarrebbe meno flessibile ma richiederebbe zero JS.
+
+### Struttura JSON suggerita per ogni analisi
+
+Ogni file JSON contiene due chiavi: `meta` (descrizione dell'analisi, tabelle usate, data di generazione) e `data` (array di record pronti per essere plottati). Questo rende i file auto-documentanti e facilmente consumabili da qualsiasi libreria JS.
