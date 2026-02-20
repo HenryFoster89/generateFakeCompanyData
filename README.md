@@ -8,7 +8,7 @@ Create synthetic data of a pharmaceutical company for analytics and BI use cases
 
 ```
 src/
-├── config.py                        # Global constants (paths, dates, seeds)
+├── config.py                        # Global constants (paths, dates)
 ├── generate_data/
 │   ├── generate_master_material.py  # Anagrafica materiali
 │   ├── generate_master_customer.py  # Anagrafica clienti
@@ -151,3 +151,80 @@ Il pattern stagionale usato per modulare i volumi degli ordini è personalizzabi
 ```
 config/seasonal_pattern.json
 ```
+
+---
+
+# Parametri
+
+Ogni file `generate_*.py` espone costanti configurabili nella sezione iniziale. I parametri globali sono in `src/config.py`.
+
+## `src/config.py` — parametri globali
+
+| Parametro | Valore default | Descrizione |
+|-----------|----------------|-------------|
+| `START_DATE` | `2023-01-01` | Data di inizio della finestra temporale usata da ordini, vendite e budget |
+| `MONTHS_HISTORY` | `36` | Mesi di storico da generare |
+| `MONTHS_FORECAST` | `12` | Mesi di forecast aggiuntivi (solo Budget) |
+| `OUTPUT_DIR` | `data_output/` | Cartella di output per tutti i CSV e il DB |
+| `SEASONAL_PATTERN_PATH` | `config/seasonal_pattern.json` | Percorso del file JSON con i fattori stagionali mensili |
+| `DB_PATH` | `data_output/company_data.db` | Percorso del database SQLite |
+
+## `generate_master_material.py` — anagrafica materiali
+
+| Parametro | Valore default | Descrizione |
+|-----------|----------------|-------------|
+| `NUM_MATERIALS` | `5` | Numero di materiali (SKU) da generare |
+| `PRODUCT_FAMILY` | lista 8 elementi | Famiglie terapeutiche assegnabili a ciascun materiale |
+| `UNITS` | `[Scatole, Flaconi, Blister, Confezioni]` | Unità di misura disponibili |
+| `IMPORTANCE_LEVELS` | `[imp_1, imp_2, imp_3]` | Livelli di importanza del materiale |
+| `IMPORTANCE_WEIGHTS` | `[0.50, 0.25, 0.25]` | Probabilità di estrazione per ciascun livello di importanza |
+| `COST_MIN` / `COST_MAX` | `23.0` / `42.0` | Range del costo unitario di produzione (€) |
+| `MARKUP_MIN` / `MARKUP_MAX` | `3.0` / `4.0` | Range del moltiplicatore applicato al costo per calcolare il prezzo di vendita (`UnitPrice = UnitCost × markup`) |
+
+## `generate_master_customer.py` — anagrafica clienti
+
+| Parametro | Valore default | Descrizione |
+|-----------|----------------|-------------|
+| `NUM_CUSTOMERS` | `10` | Numero di clienti da generare |
+| `CUSTOMER_TYPES` | `[Ospedale, Farmacia, Grossista, ASL]` | Tipologie di cliente disponibili |
+| `COUNTRY_ISO2_CODE` | `"IT"` | Codice paese ISO 3166-1 alpha-2 usato per ricavare le regioni amministrative via `pycountry` |
+| `PAYMENT_TERMS` | `[30, 60, 90, 120]` | Dilazioni di pagamento disponibili (giorni) |
+
+## `generate_orders.py` — ordini giornalieri
+
+| Parametro | Valore default | Descrizione |
+|-----------|----------------|-------------|
+| `MRK_MIN` / `MRK_MAX` | `3.0` / `4.0` | Range del markup casuale applicato al costo per calcolare `OrderValue` |
+| `GRW_MIN` / `GRW_MAX` | `0` / `0.10` | Range del tasso di crescita annua assegnato casualmente a ogni materiale |
+| `IMP_CONFIG` | vedi tabella sotto | Configurazione della domanda giornaliera per livello di importanza |
+
+`IMP_CONFIG` per livello — ogni chiave controlla:
+
+| Chiave | Descrizione |
+|--------|-------------|
+| `qty_min` / `qty_max` | Quantità giornaliera base campionata per ogni riga d'ordine |
+| `daily_prob` | Probabilità che il materiale venga ordinato in un dato giorno |
+| `cust_max` | Numero massimo di clienti che possono ordinare lo stesso materiale nello stesso giorno |
+
+## `generate_sales.py` — venduto
+
+| Parametro | Valore default | Descrizione |
+|-----------|----------------|-------------|
+| `FULFILLMENT_RATE` | `0.85` | Probabilità che un ordine generi almeno una vendita (tasso di evasione) |
+| `PARTIAL_RATE` | `0.20` | Tra gli ordini evasi, probabilità che la consegna sia parziale |
+| `MIN_PARTIAL_RATIO` | `0.30` | Percentuale minima consegnata nelle consegne parziali (es. `0.30` = almeno 30 % dell'ordinato) |
+| `SHIP_EARLY_MAX` | `5` | Massimo anticipo rispetto alla `RequestedDate` (giorni) |
+| `SHIP_LATE_MAX` | `10` | Massimo ritardo rispetto alla `RequestedDate` (giorni) |
+
+## `generate_budget.py` — budget mensile
+
+| Parametro | Valore default | Descrizione |
+|-----------|----------------|-------------|
+| `BUDGET_GRW_MIN` / `BUDGET_GRW_MAX` | `0.02` / `0.08` | Range del tasso di crescita annua applicato alla proiezione del budget per materiale |
+| `BUFFER_MIN` / `BUFFER_MAX` | `-0.15` / `+0.15` | Buffer casuale mensile applicato alla quantità/valore proiettato (±15 %) |
+
+## `generate_support_value.py` — valori di supporto
+
+| Parametro | Fonte | Descrizione |
+|-----------|-------|-------------|
+| `SEASONAL_FACTORS` | `config/seasonal_pattern.json` | Dizionario `mese → [fattore]` caricato a import-time; usato da `generate_orders.py` e `generate_budget.py` per modulare i volumi mensili |

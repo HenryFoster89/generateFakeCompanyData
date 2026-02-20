@@ -9,13 +9,15 @@ from src.config import  OUTPUT_DIR
 # master customers configuration
 #===============================
 # Number of customers to create
-NUM_CUSTOMERS = 40
+NUM_CUSTOMERS = 10
 
 # Customers Type
 CUSTOMER_TYPES = ["Ospedale", "Farmacia", "Grossista", "ASL"]
 
 # Customers Region
-COUNTRY_ISO2_CODE = "IT"                                                                        # Select country
+COUNTRY_ISO2_CODE = "IT"
+
+#TODO FUNZIONA SOLO CON ITALIA!!!!                                                              
 def get_regions_from_pycountry(country_iso_code2):
     """
     Returns a list of region names for the given ISO 3166-1 alpha-2 country code.
@@ -31,7 +33,8 @@ def get_regions_from_pycountry(country_iso_code2):
     """
     country_all_administration = pycountry.subdivisions.get(country_code = COUNTRY_ISO2_CODE)   # Get all administration from country
     regions_temp = [sub for sub in country_all_administration if sub.type == "Region"]          # Get all regions from country ()
-    return [r.name for r in regions_temp]                                                       # Get all regions from country ()
+    return [r.name for r in regions_temp]   
+                                                    
 regions = get_regions_from_pycountry(COUNTRY_ISO2_CODE)
 
 # Payment terms (Cambiare con qualcos'altro)
@@ -59,12 +62,11 @@ def generate_master_customer():
 
     customers = []
     for i in range(1, NUM_CUSTOMERS + 1):
-        customer_type = random.choice(CUSTOMER_TYPES)
-
+        
         customer = {
             "CustomerID": f"CUST{i:03d}",
-            "CustomerName": f"Cliente_{chr(64+i%26)}{i}",
-            "CustomerType": customer_type,
+            "CustomerName": f"Cliente_{chr(64 + ((i-1)%26 + 1))}{i}",
+            "CustomerType": random.choice(CUSTOMER_TYPES),
             "Region": random.choice(regions),
             "PaymentTerms": random.choice(PAYMENT_TERMS)
         }

@@ -8,7 +8,7 @@ from src.config import  OUTPUT_DIR
 # master material configuration
 #===============================
 # Number of items to create
-NUM_MATERIALS = 25
+NUM_MATERIALS = 5
 
 PRODUCT_FAMILY = [
         "Antibiotici", "Analgesici", "Cardiovascolari", "Antiinfiammatori",
@@ -58,18 +58,19 @@ def generate_master_material():
     for i in range(1, NUM_MATERIALS + 1):
         material = {
             "MaterialID": f"MAT{i:03d}",
-            "MaterialName": f"Farmaco_{chr(64+i%26)}{i}",
+            "MaterialName": f"Farmaco_{chr(64 + ((i-1)%26 + 1))}{i}",
             "Category": random.choice(PRODUCT_FAMILY),
             "UnitOfMeasure": random.choice(UNITS),
             "UnitCost": round(random.uniform(COST_MIN, COST_MAX), 2),
             "Importance": random.choices(IMPORTANCE_LEVELS, weights=IMPORTANCE_WEIGHTS, k=1)[0],
+            "MarkUp": round(random.uniform(MARKUP_MIN,MARKUP_MAX),2)
             #"TargetInventoryDays": random.choice([30, 45, 60, 90])
         }
         materials.append(material)
 
     df = pd.DataFrame(materials)
-    # A single markup factor is sampled once and applied uniformly to all materials
-    df["UnitPrice"] = round(df["UnitCost"] * random.uniform(MARKUP_MIN, MARKUP_MAX),2)
+    df["UnitPrice"] = round(df["UnitCost"] * df["MarkUp"],2)
+    df = df.drop("MarkUp", axis = 1)
     df.to_csv(OUTPUT_DIR / "MasterMaterial.csv", index=False)
     on_going_messages("[OK] Generated MasterMaterial.csv")
     return df

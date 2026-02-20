@@ -1,4 +1,11 @@
 #==============================================
+# Configurazione seed per riproducibilità
+#==============================================
+import random
+SEED = 42
+random.seed(SEED)
+
+#==============================================
 # CREATE OUTPUT DIRECTORY
 #==============================================
 from src.config import OUTPUT_DIR

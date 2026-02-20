@@ -1,12 +1,5 @@
-import random
-import numpy as np
 from pathlib import Path
 from datetime import datetime
-
-# Configurazione seed per riproducibilità
-np.random.seed(42)
-random.seed(42)
-
 # Configurazione globale
 OUTPUT_DIR            = Path("data_output")
 SEASONAL_PATTERN_PATH = Path("config") / "seasonal_pattern.json"

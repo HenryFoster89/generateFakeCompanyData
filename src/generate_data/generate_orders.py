@@ -9,12 +9,13 @@ from src.generate_data.generate_support_value import SEASONAL_FACTORS
 #===============================
 # table orders configuration
 #===============================
-
 # Sales MarkUp
+#TODO Siamo sicuri qui ?
 MRK_MIN = 3.0
 MRK_MAX = 4.0
 
 # Annual growth rate range
+#TODO Metterla anche negativa
 GRW_MIN = 0
 GRW_MAX = 0.10
 
@@ -30,6 +31,8 @@ IMP_CONFIG = {
     "imp_2": {"qty_min": 3,  "qty_max": 10, "daily_prob": 0.35, "cust_max": 3},
     "imp_3": {"qty_min": 1,  "qty_max":  5, "daily_prob": 0.20, "cust_max": 2},
 }
+
+#TODO SPOSTARE SEASONAL FACTOR QUI
 
 
 def _generate_all_days(start_date, months):
@@ -48,7 +51,7 @@ def _generate_all_days(start_date, months):
 
 def generate_ordinato(materials_df, customers_df):
     """
-    Genera il file Ordinato.csv con gli ordini giornalieri degli ultimi 36 mesi.
+    Genera il file Ordinato.csv con gli ordini giornalieri degli ultimi x mesi.
 
     For each material the daily demand is driven by its Importance level (see IMP_CONFIG).
     On any given day, a material is ordered only with probability daily_prob; if it is
@@ -96,7 +99,6 @@ def generate_ordinato(materials_df, customers_df):
         unit_cost   = material["UnitCost"]
         importance  = material["Importance"]
         cfg         = IMP_CONFIG[importance]
-
         annual_growth = random.uniform(GRW_MIN, GRW_MAX)
 
         for day_idx, date in enumerate(all_days):
