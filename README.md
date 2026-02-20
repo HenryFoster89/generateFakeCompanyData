@@ -4,6 +4,41 @@ Create synthetic data of a pharmaceutical company for analytics and BI use cases
 
 ---
 
+## Indice
+
+- [Project structure](#project-structure)
+- [Output](#output)
+- [Output description](#output-description)
+  - [MasterMaterial.csv](#mastermaterialcsv)
+  - [MasterCustomer.csv](#mastercustomercsv)
+  - [Ordinato.csv](#ordinatocsv)
+  - [Venduto.csv](#vendutocsv)
+  - [Budget.csv](#budgetcsv)
+  - [Inventario.csv](#inventariocsv)
+  - [Forecast.csv](#forecastcsv)
+- [SQLite Database](#sqlite-database)
+- [Configuration](#configuration)
+- [Parametri](#parametri)
+  - [src/config.py](#srcconfigpy--parametri-globali)
+  - [generate\_master\_material.py](#generate_master_materialpy--anagrafica-materiali)
+  - [generate\_master\_customer.py](#generate_master_customerpy--anagrafica-clienti)
+  - [generate\_orders.py](#generate_orderspy--ordini-giornalieri)
+  - [generate\_sales.py](#generate_salespy--venduto)
+  - [generate\_budget.py](#generate_budgetpy--budget-mensile)
+  - [generate\_inventory.py](#generate_inventorypy--inventario-giornaliero)
+  - [generate\_forecast.py](#generate_forecastpy--forecast-mensile-domanda)
+  - [generate\_support\_value.py](#generate_support_valuepy--valori-di-supporto)
+- [Analisi](#analisi)
+  - [Supply Chain & Inventario](#supply-chain--inventario)
+  - [Vendite & Budget](#vendite--budget)
+  - [Ordini & OTIF](#ordini--otif)
+  - [Clienti & Margini](#clienti--margini)
+  - [Forecast Accuracy](#forecast-accuracy)
+- [Architettura analitica — decisione aperta](#architettura-analitica--decisione-aperta)
+- [Tabelle da aggiungere](#tabelle-da-aggiungere)
+
+---
+
 # Project structure
 
 ```
