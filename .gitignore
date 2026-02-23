@@ -7,3 +7,9 @@
 
 # Created by script
 data_output
+
+# Cache Python
+#   # Generati automaticamente da python, velocizzano gli import
+
+__pycache__/
+*.pyc
