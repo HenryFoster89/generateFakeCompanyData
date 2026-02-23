@@ -15,3 +15,6 @@ __pycache__/
 
 # Si genera con operazioni di packaging (pip install / setup.py build)
 build/
+
+# Cartelle di metadati generate automaticamente da setupTools 
+*.egg-info/
