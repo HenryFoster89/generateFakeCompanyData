@@ -10,6 +10,8 @@ data_output
 
 # Cache Python
 #   # Generati automaticamente da python, velocizzano gli import
-
 __pycache__/
 *.pyc
+
+# Si genera con operazioni di packaging (pip install / setup.py build)
+build/
