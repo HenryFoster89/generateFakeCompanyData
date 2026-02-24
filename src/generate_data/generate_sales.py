@@ -9,10 +9,10 @@ from src.utils.utils import on_going_messages
 # table sales configuration
 #===============================
 # Probability that an order generates at least a partial sale
-FULFILLMENT_RATE = 0.85
+FULFILLMENT_RATE = 0.95
 
 # Among fulfilled orders, probability that fulfillment is partial (qty < ordered)
-PARTIAL_RATE = 0.20
+PARTIAL_RATE = 0.10
 
 # Minimum fulfillment ratio for partial deliveries (e.g. 0.30 = at least 30% delivered)
 MIN_PARTIAL_RATIO = 0.30

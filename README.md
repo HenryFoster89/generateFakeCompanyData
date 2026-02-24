@@ -34,7 +34,8 @@ Create synthetic data of a pharmaceutical company for analytics and BI use cases
   - [Ordini & OTIF](#ordini--otif)
   - [Clienti & Margini](#clienti--margini)
   - [Forecast Accuracy](#forecast-accuracy)
-- [Architettura analitica — decisione aperta](#architettura-analitica--decisione-aperta)
+- [Architettura analitica — report statico](#architettura-analitica--report-statico)
+- [Architettura analitica — report dinamico](#architettura-analitica--report-dinamico)
 - [Tabelle da aggiungere](#tabelle-da-aggiungere)
 
 ---
@@ -424,7 +425,7 @@ Confronto tra domanda prevista (Forecast) e domanda reale (Venduto aggregato per
 
 ---
 
-# Architettura analitica — decisione aperta
+# Architettura analitica — report statico
 
 ## Contesto
 
@@ -528,6 +529,87 @@ La scelta migliore è tenere **due repository con responsabilità separate**:
 ### Struttura JSON suggerita per ogni analisi
 
 Ogni file JSON contiene due chiavi: `meta` (descrizione dell'analisi, tabelle usate, data di generazione) e `data` (array di record pronti per essere plottati). Questo rende i file auto-documentanti e facilmente consumabili da qualsiasi libreria JS.
+
+---
+
+# Architettura analitica — report dinamico
+
+Un report dinamico permette all'utente di filtrare, cambiare periodo, selezionare clienti o materiali — tutto a runtime, senza ricaricare la pagina. Per un portfolio, dimostra competenze che un report statico non può mostrare: gestione dello stato, interattività, eventualmente un backend.
+
+## Opzioni valutate
+
+### Opzione 1 — Streamlit Cloud *(consigliata come punto di partenza)*
+
+- Python puro: l'80 % del codice `analytics/` è già riutilizzabile senza modifiche
+- Deploy gratuito su [streamlit.io](https://streamlit.io) con URL pubblico (`tuonome.streamlit.app`)
+- Widget nativi: slider temporali, multiselect clienti/materiali, filtri per categoria
+- Legge direttamente i CSV in `data_output/` o il DB SQLite
+- **Pro**: sviluppo rapido (giorni, non settimane); dimostra Python end-to-end; URL professionale; community enorme
+- **Contro**: UI poco personalizzabile (tema Streamlit riconoscibile); cold start di ~5 s se non attiva da tempo; non adatto se si vuole un layout HTML custom
+
+### Opzione 2 — Plotly Dash su Render / Railway
+
+- Dash è il framework React + Plotly esposto in Python; più flessibile di Streamlit
+- Deploy gratuito su [render.com](https://render.com) o [railway.app](https://railway.app) (con cold start sul free tier ~30 s)
+- Permette layout multi-pagina, CSS custom, componenti avanzati (DataTable, Tabs, Maps)
+- **Pro**: UI molto più controllabile di Streamlit; grafici Plotly nativi; adatto a chi vuole mostrare competenze frontend + backend Python
+- **Contro**: curva di apprendimento più ripida; più codice da scrivere; cold start fastidioso sul free tier
+
+### Opzione 3 — Power BI Service (publish to web)
+
+- Caricare il DB SQLite (o i CSV) su Power BI Desktop, costruire le visualizzazioni, pubblicare con "Pubblica su Web"
+- URL pubblico condivisibile, grafici interattivi, drill-down nativi
+- **Pro**: dimostra conoscenza di uno strumento enterprise standard nel settore supply chain / pharma; look professionale senza scrivere codice frontend; ottimo se il target è un ruolo BI/Data Analyst in azienda
+- **Contro**: non è "codice" — non dimostra Python né ingegneria dei dati; aggiornamento manuale dei dati (a meno di usare Power BI Gateway); meno flessibile per layout custom
+
+### Opzione 4 — Observable (observablehq.com)
+
+- Notebook JavaScript reattivo, eseguito nel browser; legge JSON direttamente
+- Usato da NYT, The Guardian, FiveThirtyEight per data journalism interattivo
+- Gratuito per notebook pubblici
+- **Pro**: visivamente impressionante; zero backend; legge i JSON già prodotti da `analytics/`; dimostra competenze JavaScript/D3
+- **Contro**: richiede buona conoscenza di JavaScript; poco noto nel mondo supply chain; distante dallo stack Python di questo progetto
+
+### Opzione 5 — Tableau Public
+
+- Caricare i CSV su Tableau Desktop (gratuito), pubblicare su Tableau Public
+- **Pro**: Tableau è lo standard de facto in molte aziende; grafici di alta qualità; zero codice
+- **Contro**: stesso limite di Power BI — non dimostra ingegneria dei dati; dati statici (nessuna connessione live); meno rilevante se il target è un ruolo data engineering / Python
+
+---
+
+## Considerazioni e raccomandazione
+
+### Da escludere per questo portfolio
+
+- **Observable**: richiede uno switch completo a JavaScript, incompatibile con lo stack Python già costruito
+- **Tableau Public**: non aggiunge valore dimostrativo rispetto al lavoro già fatto — non mostra né Python né SQL
+
+### Raccomandazione: sequenza in due step
+
+**Step 1 — Streamlit** (immediato, ~1-2 giorni di lavoro):
+
+```
+[generateFakeCompanyData]        [portfolio-streamlit]
+  ├── genera CSV / DB               ├── carica CSV / SQLite
+  └── esporta JSON analytics/       ├── sidebar: filtri clienti, mesi, categorie
+                                    ├── pagina OTIF          (già dati pronti)
+                                    ├── pagina Forecast Acc. (già dati pronti)
+                                    └── deploy su streamlit.io
+```
+
+Permette di pubblicare qualcosa di interattivo in tempi brevi, con il codice Python già scritto come base. L'URL Streamlit è accettabile come link nel CV.
+
+**Step 2 — Power BI in parallelo** (se il target è un ruolo BI/Analytics in azienda):
+
+Costruire lo stesso report anche in Power BI a partire dai CSV già generati. Avere entrambi nel CV comunica:
+> "So costruire la pipeline dati in Python *e* so presentarla con gli strumenti standard aziendali."
+
+Questa combinazione è particolarmente efficace nel settore pharma / supply chain dove Power BI è diffusissimo.
+
+### Cosa NON fare
+
+Non tentare Dash come primo approccio dinamico: la curva di apprendimento rallenta senza aggiungere valore dimostrativo rispetto a Streamlit. Dash diventa interessante solo se si vuole un layout completamente custom o si ha già esperienza React.
 
 ---
 
