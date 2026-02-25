@@ -53,5 +53,9 @@ dfInv = generate_inventory(dfMaMa, dfSal)
 from src.generate_data.generate_forecast import generate_forecast
 dfFor = generate_forecast(dfSal, dfMaMa)
 
+#==============================================
+# CREATE SQLITE
+#==============================================
 from src.generate_sql_lite_db.load_to_db import load_to_db
 load_to_db()
+
