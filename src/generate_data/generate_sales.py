@@ -12,10 +12,13 @@ from src.utils.utils import on_going_messages
 FULFILLMENT_RATE = 0.95
 
 # Among fulfilled orders, probability that fulfillment is partial (qty < ordered)
-PARTIAL_RATE = 0.10
+PARTIAL_RATE = 0.87
 
 # Minimum fulfillment ratio for partial deliveries (e.g. 0.30 = at least 30% delivered)
 MIN_PARTIAL_RATIO = 0.30
+
+# Probability that a shipment is on time (ShipmentDate <= RequestedDate)
+ON_TIME_RATE = 0.85
 
 # Shipment date offset relative to RequestedDate (days):
 #   negative = early delivery, positive = late delivery
@@ -77,7 +80,10 @@ def generate_sales(orders_df):
 
         # ShipmentDate: actual delivery around RequestedDate
         requested_date = datetime.strptime(order["RequestedDate"], "%Y-%m-%d")
-        offset_days    = random.randint(-SHIP_EARLY_MAX, SHIP_LATE_MAX)
+        if random.random() < ON_TIME_RATE:
+            offset_days = random.randint(-SHIP_EARLY_MAX, 0)   # early or on time
+        else:
+            offset_days = random.randint(1, SHIP_LATE_MAX)     # late
         shipment_date  = requested_date + timedelta(days=offset_days)
 
         sales.append({
