@@ -12,7 +12,7 @@ from src.utils.utils import on_going_messages
 FULFILLMENT_RATE = 0.95
 
 # Among fulfilled orders, probability that fulfillment is partial (qty < ordered)
-PARTIAL_RATE = 0.87
+PARTIAL_RATE = 0.17
 
 # Minimum fulfillment ratio for partial deliveries (e.g. 0.30 = at least 30% delivered)
 MIN_PARTIAL_RATIO = 0.30
